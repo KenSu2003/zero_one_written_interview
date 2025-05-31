@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
-SHEET_TITLE = "關鍵字內容分析"
+SHEET_TITLE = "ZeroOne 關鍵字數據"
 SERVICE_FILE = "service-account-key.json"
 
 def google_search(query):
@@ -17,7 +17,7 @@ def google_search(query):
         "key": GOOGLE_API_KEY,
         "cx": SEARCH_ENGINE_ID,
         "q": query,
-        "num": 10
+        "num": 10   # The first page usually contains 10 results
     }
     res = requests.get(url, params=params)
     return res.json().get("items", [])
@@ -32,8 +32,10 @@ def extract_article_text(url):
         return ""
 
 def run():
+    print("Google Search ")
     query = "滴雞精推薦"
     results = google_search(query)
+    print("Google Search Results:",results)
 
     data = []
     for item in results:
