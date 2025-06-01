@@ -95,24 +95,37 @@ function createGoogleSlidesPresentation() {
 }
 
 function getGeminiAnalysis(keywordData) {
-  // Get content from the "ZeroOne 關鍵字數據" sheet, cell D4
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  // Get content from the external file "ZeroOne 關鍵字數據", cell D3 of Sheet1
   let contentForAnalysis = "";
   
   try {
-    const zeroOneSheet = ss.getSheetByName("ZeroOne 關鍵字數據");
-    if (zeroOneSheet) {
-      contentForAnalysis = zeroOneSheet.getRange("D4").getValue();
-      // If content is empty, add a note about it
-      if (!contentForAnalysis || contentForAnalysis.trim() === "") {
-        contentForAnalysis = "注意：未提供內容分析文本。";
+    // Access the external file by name
+    const files = DriveApp.getFilesByName("ZeroOne 關鍵字數據");
+    
+    if (files.hasNext()) {
+      const file = files.next();
+      const externalSS = SpreadsheetApp.open(file);
+      const sheet1 = externalSS.getSheetByName("Sheet1") || externalSS.getSheets()[0];
+      
+      if (sheet1) {
+        contentForAnalysis = sheet1.getRange("D3").getValue();
+        Logger.log("Successfully retrieved content from external file: " + contentForAnalysis.substring(0, 50) + "...");
+      } else {
+        contentForAnalysis = "Error: Could not find Sheet1 in the external file";
+        Logger.log("Could not find Sheet1 in the external file");
       }
     } else {
-      contentForAnalysis = "注意：找不到「ZeroOne 關鍵字數據」工作表。";
+      contentForAnalysis = "Error: Could not find the external file ZeroOne 關鍵字數據";
+      Logger.log("Could not find the external file ZeroOne 關鍵字數據");
+    }
+    
+    // If content is empty, add a note about it
+    if (!contentForAnalysis || contentForAnalysis.toString().trim() === "") {
+      contentForAnalysis = "注意：外部檔案中未提供內容分析文本。";
     }
   } catch (e) {
-    Logger.log("Error accessing ZeroOne 關鍵字數據 sheet: " + e.toString());
-    contentForAnalysis = "注意：讀取內容時發生錯誤。";
+    Logger.log("Error accessing external file: " + e.toString());
+    contentForAnalysis = "注意：讀取外部檔案時發生錯誤: " + e.toString();
   }
   
   // Build a prompt for the Gemini API similar to the Python script
